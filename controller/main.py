@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
-from pathlib import Path
 
+from paes67.audio import WavSource
+from paes67.multicast import get_multicast_interface, create_sender
 # import SAP_GROUP_LOCAL and SAP_PORT
 
 
@@ -15,13 +16,13 @@ SAP_TTL = 1                     # Multicast TTL for SAP announcements
 # Define and return the program's parsed arguments
 def get_args() -> Namespace:
     parser = ArgumentParser(description="Send a low-latency stream of encoded audio using pseudo-AES67 (PAES67)")
-    parser.add_argument("--ip",         type=str,   help="IPv4 multicast destination")
-    parser.add_argument("--sap-ip",     type=str,   help="SAP multicast group (224.2.127.254 for global scope)", default=SAP_GROUP_LOCAL)
+    parser.add_argument("--group",      type=str,   help="IPv4 multicast group")
+    parser.add_argument("--sap-group",  type=str,   help="SAP multicast group (224.2.127.254 for global scope)", default=SAP_GROUP_LOCAL)
     parser.add_argument("--port",       type=int,   help="UDP destination port")
     parser.add_argument("--sap-port",   type=int,   help="SAP UDP port", default=SAP_PORT)
     parser.add_argument("--interface",  type=str,   help="IPv4 interface address (default: auto)", default="auto")
     parser.add_argument("--time",       type=float, help="Length of run in seconds; 0 means until Ctrl-C", default=0.0)
-    parser.add_argument("--wav",        type=Path,  help="Path of the WAV audio to send", default=WAV_PATH)
+    parser.add_argument("--wav",        type=str,   help="Path of the WAV audio to send", default=WAV_PATH)
     return parser.parse_args()
 
 
@@ -36,6 +37,15 @@ def verify_args(args: Namespace) -> None:
 def main():
     args = get_args()
     verify_args(args)
+
+    try:
+        source = WavSource(args.wav)
+    except (OSError, EOFError, ValueError) as exc:
+        raise SystemExit(f"Cannot open WAV file {args.wav}: {exc}")
+    interface = get_multicast_interface(args.group) if args.interface == "auto" else args.interface
+    frame_count = int(round(source.sample_rate * PACKET_MS / 1000.0))
+
+
 
     # SETUP connection with SDP
     # ENCODE audio source

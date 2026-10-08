@@ -23,6 +23,9 @@ Must support a 1 millisecond packet time.
 
 ### TODO
 
-1. Write audio.py
-2. Write multicast.py
-3. Write SAP.py
+1. Write SAP utilities
+2. Write SDP utilities
+3. Write RTP utilities
+4. Finish receiver
+5. Finish controller
+6. Test

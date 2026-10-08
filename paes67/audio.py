@@ -1,11 +1,10 @@
-from pathlib import Path
 from array import array
 import wave
 
 # Utility class for WAV sources
 class WavSource:
-    def __init__(self, path: Path):
-        self.file = wave.open(str(path), "rb")
+    def __init__(self, path: str):
+        self.file = wave.open(path, "rb")
         self.sample_rate = self.file.getframerate()
         self.channels = self.file.getnchannels()
         self.sample_width = self.file.getsampwidth()

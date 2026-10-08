@@ -11,7 +11,7 @@ OUT_PATH = "temp/out.wav"       # Path of the reconstructed WAV
 # Define and return the program's parsed arguments
 def get_args() -> Namespace:
     parser = ArgumentParser(description="Send a low-latency stream of encoded audio using pseudo-AES67 (PAES67)")
-    parser.add_argument("--sap-ip",     type=str,   help="SAP multicast group to listen on", default=SAP_GROUP_LOCAL)
+    parser.add_argument("--sap-group",  type=str,   help="SAP multicast group to listen on", default=SAP_GROUP_LOCAL)
     parser.add_argument("--sap-port",   type=int,   help="SAP listen port", default=SAP_PORT)
     parser.add_argument("--interface",  type=str,   help="IPv4 interface address", default=IGMP_INTERFACE)
     parser.add_argument("--time",       type=float, help="Receive duration in seconds; 0 means until Ctrl-C", default=0.0)
