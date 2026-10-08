@@ -19,3 +19,10 @@ Must support a 1 millisecond packet time.
 ### Next Steps
 
 - Implement SIP for connection management and maybe PTP for more accuracy
+
+
+### TODO
+
+1. Write audio.py
+2. Write multicast.py
+3. Write SAP.py

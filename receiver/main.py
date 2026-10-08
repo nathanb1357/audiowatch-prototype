@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 
 SDP_STREAM_NAME = "PAES67"      # Name of SDP Stream
 IGMP_INTERFACE = "0.0.0.0"
-OUT_PATH = "temp/out.wav"   # Path of the reconstructed WAV
+OUT_PATH = "temp/out.wav"       # Path of the reconstructed WAV
 
 
 # Define and return the program's parsed arguments
