@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from ipaddress import ip_address
 from struct import pack, unpack
+from socket import socket
+from time import perf_counter
 import zlib
 
 
@@ -93,6 +95,38 @@ class SapAnnouncer:
     # Begins with announcement burst. Then settle into interval.
     # Send deletion packet with close()
 
+    def __init__(
+        self,
+        sock: socket,
+        origin_ip: str,
+        packet: str,
+        group: str = SAP_GROUP_LOCAL,
+        port: int = SAP_PORT,
+        interval: float = 30.0
+    ) -> None:
+        self._sock = sock
+        self._destination = (group, port)
+        self._packet = SapPacket(origin_ip, msg_id_hash(packet), packet)
+        self._interval = max(1.0, interval)
+        self._startup = [4.0, 2.0, 1.0] # Announcement burst timings
+        self._next = perf_counter()
 
-    def __init__(self):
-        pass
+    # Check if its time to send another announcement
+    def poll(self, now: float | None = None) -> None:
+        now = perf_counter() if now is None else now
+        if now < self._next:
+            return
+        self.send(self._packet)
+        delay = self._startup.pop() if self._startup else self._interval
+        self._next = now + delay
+
+    def send(self, packet: SapPacket) -> None:
+        try:
+            self._sock.sendto(packet.pack(), self._dest)
+        except OSError:
+            pass
+
+    def close(self) -> None:
+        delete_packet = SapPacket(self._packet.origin, self._packet.msg_id_hash, self._packet.payload, deletion=True)
+        for _ in range(2):
+            self.send(delete_packet)

@@ -9,8 +9,6 @@ SDP_STREAM_NAME = "PAES67"      # Name of SDP Stream
 SAMPLE_RATE = 48000             # Audio sample rate
 PACKET_MS = 1.0                 # Length of audio per packet
 WAV_PATH = "test.wav"           # Filepath for test WAV
-SAP_INTERVAL = 30.0             # Seconds between normal SAP announcements
-SAP_TTL = 1                     # Multicast TTL for SAP announcements
 
 
 # Define and return the program's parsed arguments
