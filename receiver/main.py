@@ -25,11 +25,18 @@ def verify_args(args: Namespace) -> None:
         raise SystemExit("--sap-port must be between 1 and 65535")
 
 
+# Listen on the SAP group until an expected announcement arrives
+def discover_stream(args: Namespace):
+    pass
+
+
 def main():
     args = get_args()
     verify_args(args)
 
     # Select SDP stream
+
+
     # Connect to multicast with IGMP
     # Recieve audio stream
     # Playback audio

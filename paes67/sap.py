@@ -48,7 +48,7 @@ class SapPacket:
         return header + self.payload_type.encode("ascii") + b"\x00" + body
 
     @classmethod
-    def unpack(cls, data: bytes) -> "SapPacket":
+    def unpack(cls, data: bytes) -> SapPacket:
         if len(data) < 8:
             raise ValueError("SAP packet too short")
         flags, auth_len, msg_id = unpack("!BBH", data[:4])
