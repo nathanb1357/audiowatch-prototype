@@ -23,8 +23,7 @@ Must support a 1 millisecond packet time.
 
 ### TODO
 
-1. Write SDP utilities
-2. Write RTP utilities
-3. Finish receiver
-4. Finish controller
-5. Test
+1. Write RTP utilities
+2. Finish receiver
+3. Finish controller
+4. Test
