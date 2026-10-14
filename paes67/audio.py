@@ -59,7 +59,7 @@ def open_wav(path: Path, sample_rate: int) -> wave.Wave_write:
 
 
 # Convert wav to big-endian L24
-def wav_to_l24(data: bytes) -> bytes:
+def wav_to_payload(data: bytes) -> bytes:
     out = bytearray(len(data))
     out[0::3] = data[2::3]
     out[1::3] = data[1::3]

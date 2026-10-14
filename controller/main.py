@@ -1,9 +1,11 @@
 from argparse import ArgumentParser, Namespace
+from time import perf_counter, sleep
 
-from paes67.audio import WavSource
-from paes67.multicast import get_multicast_interface
-from paes67.sap import SAP_GROUP_LOCAL, SAP_PORT
+from paes67.audio import WavSource, wav_to_payload
+from paes67.multicast import get_multicast_interface, create_sender
+from paes67.sap import SAP_GROUP_LOCAL, SAP_PORT, SapAnnouncer
 from paes67.sdp import SdpSession
+from paes67.rtp import RtpSenderState
 
 
 SDP_STREAM_NAME = "PAES67"      # Name of SDP Stream
@@ -44,7 +46,7 @@ def main():
     interface = get_multicast_interface(args.group) if args.interface == "auto" else args.interface
     frame_count = int(round(source.sample_rate * PACKET_MS / 1000.0))
 
-    # Setup connection with SDP
+    # Create RTP stream with SDP
     session = SdpSession(
         name=SDP_STREAM_NAME,
         origin_ip=interface,
@@ -54,7 +56,51 @@ def main():
         sample_rate=source.sample_rate
     )
     sdp = session.render()
-    
+    rtp = RtpSenderState()
+    sock = create_sender(interface)
 
-    # ENCODE audio source
-    # TRANSMIT AUDIO with RTP
+    # Create SAP announcer
+    sap_sock = create_sender(interface)
+    announcer = SapAnnouncer(sap_sock, interface, sdp, args.sap_group, args.sap_port)
+    packet_interval = frame_count / source.sample_rate
+    next_deadline = perf_counter()
+    start_time = next_deadline
+    packets = 0
+    samples = 0
+
+    print(f"Controller/source interface: {interface}")
+    print(f"Multicast                  : {args.group}:{args.port}")
+    print(f"Audio                      : L24 {source.sample_rate} Hz from {args.wav}")
+    print(f"Packet time                : {args.packet_ms:g} ms ({frame_count} frames)")
+    print(f"SAP announcements          : {args.sap_group}:{args.sap_port}\n")
+    print("Streaming... Ctrl-C to stop.")
+
+    # Sending loop
+    try:
+        while True:
+            announcer.poll()
+            block = source.read_block(frame_count)
+            if block is None:
+                break # end of file (FIX AUDIO FILE)
+            payload = wav_to_payload(block)
+            packet = rtp.packet(payload, frame_count)
+            sock.sendto(packet.pack(), (args.group, args.port))
+            packets += 1
+            samples += frame_count
+
+            next_deadline += packet_interval
+            remaining = next_deadline - perf_counter()
+            if remaining > 0.00025:
+                sleep(remaining - 0.00015)
+            while perf_counter() < next_deadline:
+                pass
+
+            # Check timeout
+            if args.seconds > 0 and (perf_counter() - start_time) >= args.seconds:
+                break
+
+    except KeyboardInterrupt:
+        pass
+
+    finally:
+        pass # IMPLEMENT
