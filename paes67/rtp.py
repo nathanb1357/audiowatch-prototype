@@ -17,7 +17,7 @@ RTP_HEADER_SIZE = 12
 @dataclass(slots=True)
 class RtpPacket:
     payload_type: int
-    seq_no: int
+    seqno: int
     timestamp: int
     ssrc: int
     payload: bytes
@@ -26,14 +26,14 @@ class RtpPacket:
     def pack(self) -> bytes:
         first = RTP_VERSION << 6
         second = ((1 if self.marker else 0) << 7) | (self.payload_type & 0x7F)
-        header = struct.pack(">BBHII", first, second, self.sequence & 0xFFFF, self.timestamp & 0xFFFFFFFF, self.ssrc & 0xFFFFFFFF)
+        header = struct.pack(">BBHII", first, second, self.seqno & 0xFFFF, self.timestamp & 0xFFFFFFFF, self.ssrc & 0xFFFFFFFF)
         return header + self.payload
 
     @classmethod
     def unpack(cls, packet: bytes) -> "RtpPacket":
         if len(packet) < RTP_HEADER_SIZE:
             raise ValueError("RTP packet is shorter than the 12-byte header")
-        first, second, sequence, timestamp, ssrc = struct.unpack(">BBHII", packet[:12])
+        first, second, seqno, timestamp, ssrc = struct.unpack(">BBHII", packet[:12])
 
         version = first >> 6
         padding = bool(first & 0x20)
@@ -62,7 +62,7 @@ class RtpPacket:
                 raise ValueError("invalid RTP padding")
             payload = payload[:-pad_count]
 
-        return cls(payload_type, sequence, timestamp, ssrc, payload, marker)
+        return cls(payload_type, seqno, timestamp, ssrc, payload, marker)
 
 
 # Pack list of samples into L24 payload

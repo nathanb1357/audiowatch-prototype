@@ -9,12 +9,12 @@ import sounddevice as sd
 
 
 class AudioPlayer:
-    def __init__(self, sample_rate: int, enabled: bool, queue_len: int = 4) -> None:
+    def __init__(self, sample_rate: int, quiet: bool, queue_len: int = 4) -> None:
         self.dropped_blocks = 0
         self.stream = None
         self._queue = None
         self._thread = None
-        if not enabled:
+        if quiet:
             return
 
         self.stream = sd.RawOutputStream(

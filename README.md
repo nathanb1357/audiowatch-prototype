@@ -23,7 +23,6 @@ Must support a 1 millisecond packet time.
 
 ### TODO
 
-1. Add playback utilities
-2. Finish receiver
+1. Finish receiver
 2. Finish controller
 3. Test

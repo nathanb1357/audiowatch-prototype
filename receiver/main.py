@@ -1,16 +1,20 @@
 from argparse import ArgumentParser, Namespace
 from time import perf_counter
 
-from paes67.audio import open_wav
+from playback import AudioPlayer
+from paes67.audio import open_wav, samples_to_wav24_bytes
 from paes67.multicast import create_receiver, leave_multicast
 from paes67.sap import SAP_GROUP_LOCAL, SAP_PORT, SDP_TYPE, SapPacket
 from paes67.sdp import SdpSession, parse_sdp
+from paes67.rtp import RtpPacket, unpack_l24
 
 
 SDP_STREAM_NAME = "PAES67"      # Name of SDP Stream
 IGMP_INTERFACE = "0.0.0.0"
 OUT_PATH = "temp/out.wav"       # Path of the reconstructed WAV
 SAP_TIMEOUT = 30.0              # Seconds to wait for matching announcement
+CHANNELS = 2
+KB = 1024                       # Size of one kilobyte (in bytes)
 
 
 # Define and return the program's parsed arguments
@@ -85,9 +89,77 @@ def main():
     group = session.multicast_ip
     port = session.port
 
-    recv_socket = create_receiver(group, port, args.interface)
+    # Initialize playback variables
+    sock = create_receiver(group, port, args.interface)
     wav = open_wav(OUT_PATH, session.sample_rate)
+    player = AudioPlayer(session.sample_rate, args.quiet)
 
-    # Create playback object
-    # Recieve audio stream
-    # Playback audio
+    # Prepare for receiving
+    sock.settimeout(0.25)
+    start = perf_counter()
+    packets = 0
+    bytes_received = 0
+    samples_received = 0
+    lost = 0
+    last_seqno = None
+    last_ssrc = None
+
+    print(f"Receiver interface         : {args.interface}")
+    print(f"Joined multicast           : {group}:{port}")
+    print(f"Expected audio             : L24 {session.sample_rate} Hz")
+    print(f"Playback                   : {'OFF' if args.quiet else 'ON'}\n")
+    print("Receiving... Ctrl-C to stop.")
+
+    # Actual recieving + playback
+    try:
+        while True:
+            try:
+                packet_bytes, _ = sock.recvfrom(64 * KB)
+                packet = RtpPacket.unpack(packet_bytes)
+            except (TimeoutError, ValueError):
+                continue
+
+            if last_ssrc is not None and packet.ssrc != last_ssrc:
+                continue
+            if last_seqno is not None:
+                expected = (last_seqno + 1) & 0xFFFF
+                gap = (packet.seqno - expected) & 0xFFFF
+                if gap < 0x8000:
+                    lost += gap
+            last_seqno = packet.seqno
+            last_ssrc = packet.ssrc
+
+            samples = unpack_l24(packet.payload)
+            if len(samples) % CHANNELS != 0:
+                continue
+
+            if wav:
+                wav.writeframesraw(samples_to_wav24_bytes(samples))
+            if player:
+                player.write(samples)
+
+            packets += 1
+            bytes_received += len(packet.payload)
+            samples_received += len(samples)
+    
+    except KeyboardInterrupt:
+        pass
+
+    finally:
+        if player:
+            player.close()
+        if wav:
+            wav.close()
+        leave_multicast(sock, group, args.interface)
+        sock.close()
+
+    # Give session recap
+    elapsed = max(perf_counter() - start, 1e-9)
+    frames = samples_received // session.channels
+    print(f"Received {packets} RTP packets, {frames} frames, {bytes_received} payload bytes in {elapsed:.3f}s")
+    print(f"Observed packet rate       : {packets / elapsed:.1f} packets/s")
+    print(f"Detected sequence gaps     : {lost} packet(s)")
+
+
+if __name__ == "__main__":
+    main()
