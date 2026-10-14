@@ -19,7 +19,7 @@ class SdpSession:
     payload_type: int = 96  # L24 has dynamic type
     ttl: int = 1
 
-    # Convert to 
+    # Convert to string
     def render(self) -> str:
         session_id = int(time())
         address = ip_address(self.multicast_ip)

@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from paes67.audio import WavSource
 from paes67.multicast import get_multicast_interface
 from paes67.sap import SAP_GROUP_LOCAL, SAP_PORT
+from paes67.sdp import SdpSession
 
 
 SDP_STREAM_NAME = "PAES67"      # Name of SDP Stream
@@ -38,13 +39,22 @@ def main():
 
     try:
         source = WavSource(args.wav)
-    except (OSError, EOFError, ValueError) as exc:
-        raise SystemExit(f"Cannot open WAV file {args.wav}: {exc}")
+    except (OSError, EOFError, ValueError) as e:
+        raise SystemExit(f"Cannot open WAV file {args.wav}: {e}")
     interface = get_multicast_interface(args.group) if args.interface == "auto" else args.interface
     frame_count = int(round(source.sample_rate * PACKET_MS / 1000.0))
 
+    # Setup connection with SDP
+    session = SdpSession(
+        name=SDP_STREAM_NAME,
+        origin_ip=interface,
+        multicast_ip=args.group,
+        port=args.port,
+        packet_ms=PACKET_MS,
+        sample_rate=source.sample_rate
+    )
+    sdp = session.render()
+    
 
-
-    # SETUP connection with SDP
     # ENCODE audio source
     # TRANSMIT AUDIO with RTP

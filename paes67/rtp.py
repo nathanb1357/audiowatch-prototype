@@ -8,6 +8,7 @@ RTP utilities for PAES67 L24 audio.
 
 from __future__ import annotations
 from dataclasses import dataclass
+from random import getrandbits
 import struct
 
 RTP_VERSION = 2
@@ -63,6 +64,28 @@ class RtpPacket:
             payload = payload[:-pad_count]
 
         return cls(payload_type, seqno, timestamp, ssrc, payload, marker)
+
+
+# Sender state that is used to generate packets
+class RtpSenderState:
+    def __init__(self, payload_type: int = 96):
+        self.payload_type = payload_type
+        self.ssrc = getrandbits(32)
+        self.seqno = getrandbits(16) # initial value SHOULD be random (RTP)
+        self.timestamp = getrandbits(32) # initial value SHOULD be random (RTP)
+
+    def packet(self, payload: bytes, increment: int, marker: bool = False) -> RtpPacket:
+        packet = RtpPacket(
+            payload_type=self.payload_type,
+            seqno=self.seqno,
+            timestamp=self.timestamp,
+            ssrc=self.ssrc,
+            payload=payload,
+            marker=marker
+        )
+        self.seqno = (self.seqno + 1) & 0xFFFF # 16-bits
+        self.timestamp = (self.timestamp) & 0xFFFFFFFF # 32-bits
+        return packet
 
 
 # Pack list of samples into L24 payload
