@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from paes67.audio import WavSource
-from paes67.multicast import get_multicast_interface, create_sender
-# import SAP_GROUP_LOCAL and SAP_PORT
+from paes67.multicast import get_multicast_interface
+from paes67.sap import SAP_GROUP_LOCAL, SAP_PORT
 
 
 SDP_STREAM_NAME = "PAES67"      # Name of SDP Stream

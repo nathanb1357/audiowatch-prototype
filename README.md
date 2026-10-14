@@ -23,7 +23,7 @@ Must support a 1 millisecond packet time.
 
 ### TODO
 
-1. Write RTP utilities
+1. Add playback utilities
 2. Finish receiver
-3. Finish controller
-4. Test
+2. Finish controller
+3. Test

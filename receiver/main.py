@@ -1,10 +1,9 @@
 from argparse import ArgumentParser, Namespace
 from time import perf_counter
 
-# import SAP_GROUP_LOCAL and SAP_PORT
 from paes67.audio import open_wav
 from paes67.multicast import create_receiver, leave_multicast
-from paes67.sap import SDP_TYPE, SapPacket
+from paes67.sap import SAP_GROUP_LOCAL, SAP_PORT, SDP_TYPE, SapPacket
 from paes67.sdp import SdpSession, parse_sdp
 
 
