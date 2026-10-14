@@ -102,7 +102,7 @@ class SapAnnouncer:
         packet: str,
         group: str = SAP_GROUP_LOCAL,
         port: int = SAP_PORT,
-        interval: float = 30.0
+        interval: float = 15.0
     ) -> None:
         self._sock = sock
         self._destination = (group, port)
