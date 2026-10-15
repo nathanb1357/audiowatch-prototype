@@ -23,6 +23,7 @@ Must support a 1 millisecond packet time.
 
 ### TODO
 
-1. Finish receiver
-2. Finish controller
-3. Test
+1. Create makefile
+2. How to measure tests?
+3. Test program (locally)
+4. Test program (lab)

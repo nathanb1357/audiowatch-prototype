@@ -21,8 +21,10 @@ class WavSource:
         frame_bytes = self.channels * 3
         want = frame_count * frame_bytes
         data = self.read_frames(frame_count)
-        if len(data) < want:
+        if not data:
             return None
+        if len(data) < want:
+            data += b"\x00" * (want - len(data))
         return data
 
     def close(self) -> None:

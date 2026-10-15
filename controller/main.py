@@ -103,4 +103,14 @@ def main():
         pass
 
     finally:
-        pass # IMPLEMENT
+        announcer.close()
+        sap_sock.close()
+        sock.close()
+        source.close()
+
+    elapsed = perf_counter() - start_time
+    print(f"Sent {packets} RTP packets / {samples} samples in {elapsed:.3f}s ({packets / elapsed:.1f} packets/s)")
+
+
+if __name__ == "__main__":
+    main()
