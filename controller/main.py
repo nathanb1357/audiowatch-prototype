@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from time import perf_counter, sleep
+from pathlib import Path
 
 from paes67.audio import WavSource, wav_to_payload
 from paes67.multicast import get_multicast_interface, create_sender
@@ -8,10 +9,10 @@ from paes67.sdp import SdpSession
 from paes67.rtp import RtpSenderState
 
 
-SDP_STREAM_NAME = "PAES67"      # Name of SDP Stream
-SAMPLE_RATE = 48000             # Audio sample rate
-PACKET_MS = 1.0                 # Length of audio per packet
-WAV_PATH = "test.wav"           # Filepath for test WAV
+SDP_STREAM_NAME = "PAES67"                      # Name of SDP Stream
+SAMPLE_RATE = 48000                             # Audio sample rate
+PACKET_MS = 1.0                                 # Length of audio per packet
+WAV_PATH = Path(__file__).parent / "test.wav"   # Filepath for test WAV
 
 
 # Define and return the program's parsed arguments
@@ -40,7 +41,7 @@ def main():
     verify_args(args)
 
     try:
-        source = WavSource(args.wav)
+        source = WavSource(str(args.wav))
     except (OSError, EOFError, ValueError) as e:
         raise SystemExit(f"Cannot open WAV file {args.wav}: {e}")
     interface = get_multicast_interface(args.group) if args.interface == "auto" else args.interface
@@ -71,7 +72,7 @@ def main():
     print(f"Controller/source interface: {interface}")
     print(f"Multicast                  : {args.group}:{args.port}")
     print(f"Audio                      : L24 {source.sample_rate} Hz from {args.wav}")
-    print(f"Packet time                : {args.packet_ms:g} ms ({frame_count} frames)")
+    print(f"Packet time                : {PACKET_MS:g} ms ({frame_count} frames)")
     print(f"SAP announcements          : {args.sap_group}:{args.sap_port}\n")
     print("Streaming... Ctrl-C to stop.")
 
@@ -81,7 +82,7 @@ def main():
             announcer.poll()
             block = source.read_block(frame_count)
             if block is None:
-                break # end of file (FIX AUDIO FILE)
+                break
             payload = wav_to_payload(block)
             packet = rtp.packet(payload, frame_count)
             sock.sendto(packet.pack(), (args.group, args.port))
@@ -96,7 +97,7 @@ def main():
                 pass
 
             # Check timeout
-            if args.seconds > 0 and (perf_counter() - start_time) >= args.seconds:
+            if args.time > 0 and (perf_counter() - start_time) >= args.time:
                 break
 
     except KeyboardInterrupt:

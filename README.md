@@ -19,11 +19,11 @@ Must support a 1 millisecond packet time.
 ### Next Steps
 
 - Implement SIP for connection management and maybe PTP for more accuracy
+- Implement functionality for audio that isn't 24-bit PCM
 
 
 ### TODO
 
-1. Create makefile
-2. How to measure tests?
-3. Test program (locally)
-4. Test program (lab)
+1. Create tests
+2. Test program (lab)
+3. Figure out static problem

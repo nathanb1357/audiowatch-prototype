@@ -73,7 +73,7 @@ def parse_sdp(text: str) -> SdpSession:
     port = int(media[1])
     payload_type = int(media[3])
 
-    codec = rtpmap.get(payload_type)
+    codec = values.get("rtp")
     if not codec:
         raise ValueError("SDP is missing the RTP codec mapping")
     encoding, rate = codec.split("/")

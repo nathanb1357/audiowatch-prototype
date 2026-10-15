@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from time import perf_counter
 
-from playback import AudioPlayer
+from .playback import AudioPlayer
 from paes67.audio import open_wav, samples_to_wav24_bytes
 from paes67.multicast import create_receiver, leave_multicast
 from paes67.sap import SAP_GROUP_LOCAL, SAP_PORT, SDP_TYPE, SapPacket
@@ -12,7 +12,7 @@ from paes67.rtp import RtpPacket, unpack_l24
 SDP_STREAM_NAME = "PAES67"      # Name of SDP Stream
 IGMP_INTERFACE = "0.0.0.0"
 OUT_PATH = "temp/out.wav"       # Path of the reconstructed WAV
-SAP_TIMEOUT = 30.0              # Seconds to wait for matching announcement
+SAP_TIMEOUT = 15.0              # Seconds to wait for matching announcement
 CHANNELS = 2
 KB = 1024                       # Size of one kilobyte (in bytes)
 
@@ -24,7 +24,7 @@ def get_args() -> Namespace:
     parser.add_argument("--sap-port",   type=int,   help="SAP listen port", default=SAP_PORT)
     parser.add_argument("--interface",  type=str,   help="IPv4 interface address", default=IGMP_INTERFACE)
     parser.add_argument("--time",       type=float, help="Receive duration in seconds; 0 means until Ctrl-C", default=0.0)
-    parser.add_argument("--quiet", "-q",type=bool,  help="Disable live playback", action='store_true')
+    parser.add_argument("--quiet", "-q",help="Disable live playback", action='store_true')
     return parser.parse_args()
 
 
@@ -62,11 +62,7 @@ def discover_stream(args: Namespace) -> SdpSession:
                 heard[key] = session
                 print(f"Heard stream               : '{session.name}' {session.multicast_ip}:{session.port}")
 
-            if args.stream_name and session.name.lower() != args.stream_name.lower():
-                continue
-            if args.group and session.multicast_ip != args.group:
-                continue
-            if args.port and session.port != args.port:
+            if session.name.upper() != SDP_STREAM_NAME:
                 continue
             return session
     
@@ -155,7 +151,7 @@ def main():
 
     # Give session recap
     elapsed = max(perf_counter() - start, 1e-9)
-    frames = samples_received // session.channels
+    frames = samples_received // CHANNELS
     print(f"Received {packets} RTP packets, {frames} frames, {bytes_received} payload bytes in {elapsed:.3f}s")
     print(f"Observed packet rate       : {packets / elapsed:.1f} packets/s")
     print(f"Detected sequence gaps     : {lost} packet(s)")

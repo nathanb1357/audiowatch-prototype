@@ -52,7 +52,9 @@ def samples_to_wav24_bytes(samples: list[int]) -> bytes:
 
 
 # Open wav file
-def open_wav(path: Path, sample_rate: int) -> wave.Wave_write:
+def open_wav(path: str, sample_rate: int) -> wave.Wave_write:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
     wav = wave.open(str(path), "wb")
     wav.setnchannels(2)
     wav.setsampwidth(3)

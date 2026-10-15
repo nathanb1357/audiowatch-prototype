@@ -102,10 +102,10 @@ class SapAnnouncer:
         packet: str,
         group: str = SAP_GROUP_LOCAL,
         port: int = SAP_PORT,
-        interval: float = 15.0
+        interval: float = 7.0
     ) -> None:
         self._sock = sock
-        self._destination = (group, port)
+        self._dest = (group, port)
         self._packet = SapPacket(origin_ip, msg_id_hash(packet), packet)
         self._interval = max(1.0, interval)
         self._startup = [4.0, 2.0, 1.0] # Announcement burst timings
