@@ -26,4 +26,3 @@ Must support a 1 millisecond packet time.
 
 1. Create tests
 2. Test program (lab)
-3. Figure out static problem

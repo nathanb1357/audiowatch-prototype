@@ -44,9 +44,9 @@ def samples_to_wav24_bytes(samples: list[int]) -> bytes:
     for sample in samples:
         if sample < 0:
             sample += 1 << 24
-        out[index] = (sample >> 16) & 0xFF
+        out[index] = sample & 0xFF
         out[index + 1] = (sample >> 8) & 0xFF
-        out[index + 2] = sample & 0xFF
+        out[index + 2] = (sample >> 16) & 0xFF
         index += 3
     return bytes(out)
 

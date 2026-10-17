@@ -84,7 +84,7 @@ class RtpSenderState:
             marker=marker
         )
         self.seqno = (self.seqno + 1) & 0xFFFF # 16-bits
-        self.timestamp = (self.timestamp) & 0xFFFFFFFF # 32-bits
+        self.timestamp = (self.timestamp + increment) & 0xFFFFFFFF # 32-bits
         return packet
 
 
