@@ -80,5 +80,4 @@ make latency-report
 
 ### Future Project Steps
 
-- Implement SIP for connection management and maybe PTP for more accuracy
 - Implement functionality for audio that isn't 24-bit PCM
