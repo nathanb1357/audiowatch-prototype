@@ -7,8 +7,14 @@
 
 ## Tasks
 
-- Build traffic capture
-
+1. Build Traffic Capturer
+2. Build IGMP Parser
+3. Registry file
+4. Define events
+5. Alerts
+6. Create monitor.py
+7. Run everything with main.py
+8. Testing etc.
 
 -------------------------
 
