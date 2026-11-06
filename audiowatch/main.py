@@ -17,6 +17,7 @@ def get_args() -> Namespace:
     p.add_argument("--capture",     type=str,   help="NIC to sniff IGMP on (eth0, all, etc.)")
     p.add_argument("--mem-timeout", type=float, help="Seconds without an IGMP report before a member is declared gone", default=DEFAULT_MEMBER_TIMEOUT)
     p.add_argument("--log-file",    type=str,   help="Log file to append every alert as a JSON line")
+    p.add_argument("--pcap",        type=str,   help="PCAP file to replay instead of sniffing live")
     p.add_argument("-v", "--verbose", action="store_true", help="Print every IGMP message seen")
     return p.parse_args()
 
