@@ -1,6 +1,5 @@
 
-This project prototype mimics an AES67 audio-over-IP network (pAES67) as a basis to implement the
-AudioWatch monitoring software to add security to an otherwise unencrypted protocol suite.
+This project prototype mimics an AES67 audio-over-IP network (pAES67) as a basis to implement the AudioWatch monitoring software to add security to an otherwise unencrypted protocol suite.
 
 
 ### Protocols Implemented (pAES67)
@@ -16,15 +15,17 @@ AudioWatch monitoring software to add security to an otherwise unencrypted proto
 ### Structure
 
 - `/paes67` is a package for shared network stuff
+- `/audiowatch` is the package that holds the main monitor
 - `/controller` is the network controller that broadcasts the audio
 - `/receiver` is a basic receiver that recieves and plays back the audio
-- `/tests/` is the test module for measuring success
+- `/tests` is the test module for measuring project performance and behaviour
 
 ### Dependencies
 
 - python3
 - sounddevice
 - make
+
 
 ### Setup
 

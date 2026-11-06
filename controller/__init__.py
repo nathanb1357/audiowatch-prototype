@@ -1,3 +1,3 @@
-"""Network controller for this AES67-like prototype. The monitoring system should also be here, just not the UI."""
+"""Network controller for the pAES67 suite."""
 
 __version__ = "0.1.0"
