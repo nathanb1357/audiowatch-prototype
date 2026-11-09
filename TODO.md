@@ -7,13 +7,11 @@
 
 ## Tasks
 
-1. Build IGMP Parser
-2. Registry file
-3. Define events
-4. Alerts
-5. Create monitor.py
-6. Run everything with main.py
-7. Testing etc.
+1. Create registry trackr
+2. Alerts
+3. Create monitor.py
+4. Run everything with main.py
+5. Testing etc.
 
 -------------------------
 
