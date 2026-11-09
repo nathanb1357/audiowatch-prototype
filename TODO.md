@@ -7,11 +7,10 @@
 
 ## Tasks
 
-1. Create registry trackr
-2. Alerts
-3. Create monitor.py
-4. Run everything with main.py
-5. Testing etc.
+1. Alerts
+2. Create monitor.py
+3. Run everything with main.py
+4. Testing etc.
 
 -------------------------
 
