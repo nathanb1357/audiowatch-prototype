@@ -67,7 +67,7 @@ class Registry:
         for key, member in list(self.members.items()):
             if now - member.last_seen > self.member_timeout:
                 del self.members[key]
-                events.append(self._event(EventType.EXPIRED, now, member, False, note=f"TIMEOUT: {now - member.last_seen:.0f}s"))
+                events.append(self._event(EventType.EXPIRED, now, member, False, note=f"timeout after {now - member.last_seen:.0f}s"))
         return events
 
 
@@ -117,7 +117,7 @@ class Registry:
         if device.mac != packet.src_mac and packet.src_ip != "0.0.0.0":
             previous, device.mac = device.mac, packet.src_mac
             ghost = Member(device, 0, packet.timestamp, packet.timestamp, 0, "mac change")
-            events.append(self._event(EventType.MAC_CHANGED, packet.timestamp, ghost, False, note=f"PREV: {previous}"))
+            events.append(self._event(EventType.MAC_CHANGED, packet.timestamp, ghost, False, note=f"mac changed from {previous}"))
         device.last_seen = packet.timestamp
         device.vlan = packet.vlan
         device.interface = packet.interface

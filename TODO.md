@@ -1,16 +1,14 @@
 **Milestone Goal**
 - Build a passive AudioWatch monitor that creates an alert whenever a device joins or leaves the AES67 multicast that should print the info of those devices.
-- Testing should be manual.
-- Maybe implement PTP????
 
 ------------------------
 
 ## Tasks
 
-1. Alerts
-2. Create monitor.py
-3. Run everything with main.py
-4. Testing etc.
+1. Create monitor loop
+2. Run everything with main.py
+3. Testing (personal device)
+4. Testing (lab devices)
 
 -------------------------
 
