@@ -5,10 +5,9 @@
 
 ## Tasks
 
-1. Create monitor loop
-2. Run everything with main.py
-3. Testing (personal device)
-4. Testing (lab devices)
+1. Run everything with main.py
+2. Testing (personal device)
+3. Testing (lab devices)
 
 -------------------------
 

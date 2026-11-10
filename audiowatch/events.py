@@ -39,4 +39,4 @@ class Event:
         return d
 
 # Anything that gets passed in an event
-EventSubscriber = Callable[[Event], None]
+type EventSub = Callable[[Event], None]

@@ -100,7 +100,7 @@ def parse_igmp(data: bytes) -> IgmpMessage | None:
 
     # If the message is a v3 membership report...
     if kind == TYPE_V3_REPORT:
-        return parse_v3_report(data)
+        return _parse_v3_report(data)
 
     # If the message is a v2 leave...
     if kind == TYPE_V2_LEAVE:
@@ -111,7 +111,7 @@ def parse_igmp(data: bytes) -> IgmpMessage | None:
 
 # Parses IGMPv3 membership reports
 # More complicated due to containing multiple group records
-def parse_v3_report(data: bytes) -> IgmpMessage | None:
+def _parse_v3_report(data: bytes) -> IgmpMessage | None:
     (count,) = struct.unpack("!H", data[6:8])
     offset = 8
     out: list[Membership] = []
