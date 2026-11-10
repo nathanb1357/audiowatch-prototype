@@ -5,7 +5,7 @@
 
 ## Tasks
 
-1. Run everything with main.py
+1. Build testing stuff
 2. Testing (personal device)
 3. Testing (lab devices)
 

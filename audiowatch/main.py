@@ -40,8 +40,9 @@ def main() -> None:
 
     registry = Registry(args.group, STREAM_NAME)
     subscribers = [ConsoleLogger()]
-    if args.log_file:
-        subscribers.append(JsonLogger(args.log_file))
+    logfile = JsonLogger(args.log_file) if args.log_file else None
+    if logfile:
+        subscribers.append(logfile)
     try:
         source = open_source(args.capture, args.pcap)
     except (OSError, ImportError, ValueError) as exc:
@@ -49,4 +50,20 @@ def main() -> None:
 
     # Initialize AudioWatch monitor
     monitor = Monitor(source, registry, subscribers, args.verbose)
-    
+    print(f"AudioWatch currently watching : {args.group} '{STREAM_NAME}'")
+    print("Monitoring... Ctrl-C to stop.\n")
+
+    try:
+        monitor.run()
+    except KeyboardInterrupt:
+        pass
+    except (OSError, ValueError) as e:
+        print(f"Capture stopped: {e}")
+    finally:
+        source.close()
+        if logfile:
+            logfile.close()
+    print(monitor.summary())
+
+if __name__ == "__main__":
+    main()
