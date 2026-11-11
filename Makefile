@@ -10,4 +10,8 @@ receiver-local:
 	python3 -m receiver.main
 
 latency-report:
-	python3 -m tests.report_loss_latency --seconds $(SECONDS)
+	python3 -m tests.report_latency --seconds $(SECONDS)
+
+# AudioWatch passive monitor
+audiowatch:
+	sudo python3 -m audiowatch.main --group $(GROUP)
