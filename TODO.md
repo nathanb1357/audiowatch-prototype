@@ -5,9 +5,9 @@
 
 ## Tasks
 
-1. Build testing stuff
-2. Testing (personal device)
-3. Testing (lab devices)
+1. Testing (personal device)
+2. Testing (lab devices)
+3. Edit README.md
 
 -------------------------
 

@@ -64,6 +64,9 @@ class Registry:
     # Remove members who have timed out
     def expire(self, now: float) -> list[Event]:
         events: list[Event] = []
+        # With no queriers on the network, don't time out devices
+        if not self.queriers:
+            return events
         for key, member in list(self.members.items()):
             if now - member.last_seen > self.member_timeout:
                 del self.members[key]
@@ -76,7 +79,7 @@ class Registry:
         now = packet.timestamp
         events: list[Event] = []
         key = packet.src_ip if packet.src_ip != "0.0.0.0" else packet.src_mac
-        device, new_device = self._touch_device(key, packet, events)
+        device, new_device = self._manage_device(key, packet, events)
 
         # IGMPv2/v1 report suppression (reports all members, so no need to check seperately)
         if m.action is Action.JOIN and m.version < 3:

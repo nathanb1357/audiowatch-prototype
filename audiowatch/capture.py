@@ -8,6 +8,7 @@ Traffic capturing utilities for AudioWatch:
 - Method that opens the correct source
 """
 
+import ctypes
 import struct
 import socket
 import time
@@ -23,8 +24,11 @@ ETH_ALL = 0x0003
 ETH_IP = 0x0800
 ETH_VLAN_Q = 0x8100
 ETH_VLAN_AD = 0x88A8
-PACKET_OUTGOING = 4  # Identify outgoing packets to avoid duplicates
-SO_ATTACH_FILTER = 26  # Linux default value for BPF attachment
+PACKET_OUTGOING = 4     # Identify outgoing packets to avoid duplicates
+SO_ATTACH_FILTER = 26   # Linux default value for BPF attachment
+SOL_PACKET = 263        # Packet socket protocol level
+MAX_IPV4 = 65535        # Max IPv4 packet size
+
 
 # Defines a captured frame (timestamp, raw bytes, network interface)
 Frame = tuple[float, bytes, str]
@@ -75,7 +79,7 @@ def examine_frame(timestamp: float, frame: bytes, interface: str = "") -> IgmpPa
         return None
     head_len = (ip[0] & 0x0F) * 4
     total_len = struct.unpack("!H", ip[2:4])[0]
-    if ip[9] != IGMP_PROTOCOL or head_len < 20 or total_len < head_len or len(ip) < head_len or total_len <= len(ip):
+    if ip[9] != IGMP_PROTOCOL or head_len < 20 or total_len < head_len or len(ip) < head_len or total_len > len(ip):
         return None
     payload = ip[head_len:total_len]
     return IgmpPacket(
@@ -93,6 +97,22 @@ def examine_frame(timestamp: float, frame: bytes, interface: str = "") -> IgmpPa
 # |                     LINUX RAW SOCKETS                     |
 # |-----------------------------------------------------------|
 
+# Kernel filter (classic BPF): only let IPv4 IGMP through, plain or VLAN-tagged.
+BPF_IGMP = [
+    (0x28, 0, 0, 12),            #  ldh [12]            ethertype
+    (0x15, 0, 2, ETH_IP),        #  jeq IPv4 ? 2 : 4
+    (0x30, 0, 0, 23),            #  ldb [23]            IP protocol
+    (0x15, 5, 6, IGMP_PROTOCOL), #  jeq IGMP ? accept : drop
+    (0x15, 0, 5, ETH_VLAN_Q),    #  jeq 802.1Q ? 5 : drop
+    (0x28, 0, 0, 16),            #  ldh [16]            ethertype behind the tag
+    (0x15, 0, 3, ETH_IP),        #  jeq IPv4 ? 7 : drop
+    (0x30, 0, 0, 27),            #  ldb [27]            IP protocol behind the tag
+    (0x15, 0, 1, IGMP_PROTOCOL), #  jeq IGMP ? accept : drop
+    (0x06, 0, 0, 0x40000),       #  accept
+    (0x06, 0, 0, 0),             #  drop
+]
+
+
 # Live packet capture using Linux Raw Sockets
 class RawSocketSource:
     def __init__(self, interface: str | None = None, idle_s: float = 0.5) -> None:
@@ -104,15 +124,36 @@ class RawSocketSource:
         except PermissionError as exc:
             raise PermissionError("raw capture needs root (try sudo) or CAP_NET_RAW") from exc
         
+        self._attach_filter()
         if interface:
             self.sock.bind((interface, 0))
+        self._enable_promiscuous(interface)
         self.sock.settimeout(idle_s)
+
+    # Attach the kernel filter
+    def _attach_filter(self) -> None:
+        program = b"".join(struct.pack("HBBI", *insn) for insn in BPF_IGMP)
+        buf = ctypes.create_string_buffer(program, len(program))
+        try:
+            self.sock.setsockopt(socket.SOL_SOCKET, SO_ATTACH_FILTER, struct.pack("@HP", len(BPF_IGMP), ctypes.addressof(buf)))
+        except OSError:
+            pass
+    
+    # Promiscuous mode: IGMP from other devices is addressed to a multicast group (or 224.0.0.22)
+    def _enable_promiscuous(self, interface: str | None) -> None:
+        names = [interface] if interface else [name for _, name in socket.if_nameindex()]
+        for name in names:
+            try:
+                mreq = struct.pack("iHH8s", socket.if_nametoindex(name), 1, 0, b"")
+                self.sock.setsockopt(SOL_PACKET, 1, mreq)
+            except OSError:
+                pass
 
     # Returns a stream of frames to yield from
     def frames(self) -> Iterator[Frame | None]:
         while True:
             try:
-                data, addr = self.sock.recvfrom(65535)
+                data, addr = self.sock.recvfrom(MAX_IPV4)
             except TimeoutError:
                 yield None
                 continue

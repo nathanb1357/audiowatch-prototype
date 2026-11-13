@@ -35,7 +35,7 @@ def format_event(event: Event) -> str:
 
     else:
         lines.append(f"    igmp    : {event.igmp}{iface}")
-        lines.append(f"    session : member for {event.time - event.joined_at}s, {event.reports} report(s)")
+        lines.append(f"    session : member for {event.time - event.joined_at:.2f}s, {event.reports} report(s)")
         lines.append(f"    group   : {event.members} member(s) remain")
     
     if event.note:

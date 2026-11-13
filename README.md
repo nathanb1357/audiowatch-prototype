@@ -1,5 +1,5 @@
 
-This project prototype mimics an AES67 audio-over-IP network (pAES67) as a basis to implement the AudioWatch monitoring software to add security to an otherwise unencrypted protocol suite.
+AudioWatch is a generic monitoring program for AES67 audio-over-IP networks. This project includes pAES67, a protocol suite that mimics an AES67 network in order to act as a test environment for the program. Currently, AudioWatch prints an alert whenever a device joins or leaves the audio multicast group.
 
 
 ### Protocols Implemented (pAES67)
@@ -20,19 +20,18 @@ This project prototype mimics an AES67 audio-over-IP network (pAES67) as a basis
 - `/receiver` is a basic receiver that recieves and plays back the audio
 - `/tests` is the test module for measuring project performance and behaviour
 
+
 ### Dependencies
 
-- python3
+- Linux (sudo required for AudioWatch)
+- python3 (>=3.12)
 - sounddevice
 - make
 
 
 ### Setup
 
-1. Get the project folder and open a terminal in it.
-```
-cd audiowatch-prototype
-```
+1. Open a terminal in the project folder.
 
 2. Create and activate a virtual environment (recommended).
 ```
@@ -44,6 +43,7 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 ```
 pip install -r requirements.txt
 ```
+
 
 ### Running
 
@@ -82,3 +82,6 @@ make latency-report
 ### Future Project Steps
 
 - Implement functionality for audio that isn't 24-bit PCM
+- Persist device information between sessions and let the user name devices
+- Block devices from the group and prevent re-joining
+- Create a monitor dashboard for future users
