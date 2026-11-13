@@ -2,6 +2,8 @@ GROUP ?= 239.69.11.44
 PORT ?= 5004
 SECONDS ?= 5
 
+.PHONY: audiowatch
+
 
 controller-local:
 	python3 -m controller.main --group $(GROUP) --port $(PORT)

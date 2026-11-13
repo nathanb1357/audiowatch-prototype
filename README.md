@@ -76,12 +76,12 @@ make audiowatch GROUP=239.69.11.44
 
 2. Computer A, terminal 2: controller.
 ```
-python3 -m controller.main --group 239.69.11.44 --port 5004 --interface 192.168.50.1
+python3 -m controller.main --group 239.69.11.44 --port 5004 --interface 192.168.0.1
 ```
 
 3. Computer B: receiver. AudioWatch alerts when it starts (JOIN) and when you stop it with Ctrl-C (LEAVE).
 ```
-python3 -m receiver.main --interface 192.168.50.2
+python3 -m receiver.main --interface 192.168.0.2
 ```
 
 
@@ -120,17 +120,17 @@ make audiowatch
 ```
 2. Computer A, terminal 2: 
 ```
-python3 -m controller.main --group 239.69.11.44 --port 5004 --interface 192.168.50.1
+python3 -m controller.main --group 239.69.11.44 --port 5004 --interface 192.168.0.1
 ```
 
 3. **JOIN:** (Computer B):
 ```
-python3 -m receiver.main --interface 192.168.50.2 -q
+python3 -m receiver.main --interface 192.168.0.2 -q
 ```
 
 4. **MAC_CHANGED:** (Computer B):
 ```
-sudo python3 -m tests.simulate_igmp join --iface <B's network card> --src-ip 192.168.50.2 --src-mac 02:de:ad:be:ef:01
+sudo python3 -m tests.simulate_igmp join --iface <B's network card> --src-ip 192.168.0.2 --src-mac 02:de:ad:be:ef:01
 ```
 
 5. **LEAVE:** Press Ctrl-C on B's receiver.
@@ -152,12 +152,12 @@ make audiowatch
 
 2. Computer B: 
 ```
-python3 -m receiver.main --interface 192.168.50.2 -q
+python3 -m receiver.main --interface 192.168.0.2
 ```
 
 3. Computer A: 
 ```
-python3 -m controller.main --group 239.69.11.44 --port 5004 --interface 192.168.50.1 --time 60
+python3 -m controller.main --group 239.69.11.44 --port 5004 --interface 192.168.0.1
 ```
 
 4. On A, while AudioWatch is running, also run the latency/loss test.
