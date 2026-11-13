@@ -36,7 +36,7 @@ AudioWatch is a generic monitoring program for AES67 audio-over-IP networks. Thi
 2. Create and activate a virtual environment (recommended).
 ```
 python3 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 ```
 
 3. Install the pip dependencies
@@ -47,37 +47,124 @@ pip install -r requirements.txt
 
 ### Running
 
+AudioWatch runs on the same machine as the controller (the admin device).
+
 #### On 1 machine
-1. Terminal 1, receiver. Start it first. It waits up to 15 seconds for a SAP announcement.
+1. Terminal 1: AudioWatch, watching the loopback interface
 ```
-make receiver-local
+make audiowatch-local
 ```
 
-2. Terminal 2, controller.
+2. Terminal 2: controller
 ```
 make controller-local
 ```
 
-Or with your own file and settings:
+3. Terminal 3: receiver
 ```
-python3 -m controller.main --group 239.69.11.44 --port 5004 --wav path/to/audio.wav
+make receiver-local
 ```
-Stop the receiver with Ctrl-C after the controller finishes. It prints a summary, including Detected sequence gaps : 0 packet(s). The received audio is saved to temp/out.wav and is overwritten on every run.
 
 #### On 2+ machines
 
-Run the receiver on one computer and the controller on another, both on the same subnet. On a computer with several network interfaces (Wi-Fi plus Ethernet, VPN, virtual adapters), name the interface by its IP address so multicast leaves and arrives on the right one:
+Computer A is the admin device (AudioWatch and controller). Computer B is a receiver. Both must be on the same subnet. If a computer has several network interfaces (Wi-Fi plus Ethernet, VPN, virtual adapters), name the interface by its IP address so multicast leaves and arrives on the right one.
+
+1. Computer A, terminal 1: AudioWatch. Add `--capture <network card>` (for example `eth0`) if A has several network cards.
 ```
-python3 -m controller.main --group 239.69.11.44 --port 5004 --interface 192.168.1.20
-python3 -m receiver.main --interface 192.168.1.30
+make audiowatch GROUP=239.69.11.44
 ```
 
-#### Testing
+2. Computer A, terminal 2: controller.
+```
+python3 -m controller.main --group 239.69.11.44 --port 5004 --interface 192.168.50.1
+```
 
-The latency/loss test suite can be run with just:
+3. Computer B: receiver. AudioWatch alerts when it starts (JOIN) and when you stop it with Ctrl-C (LEAVE).
 ```
-make latency-report
+python3 -m receiver.main --interface 192.168.50.2
 ```
+
+
+### Testing
+
+All tests below use `GROUP=239.69.11.44`
+
+#### Test 1: Alerts on 1 machine
+
+1. Terminal 1:
+```
+make controller-local
+```
+
+2. Terminal 2: 
+```
+make audiowatch-local
+```
+
+3. Terminal 3, one at a time:
+```
+sudo python3 -m tests.simulate_igmp join  --src-ip 10.0.0.21
+sudo python3 -m tests.simulate_igmp join  --src-ip 10.0.0.22 --igmp 3
+sudo python3 -m tests.simulate_igmp join  --src-ip 10.0.0.21 --src-mac 02:de:ad:be:ef:01
+sudo python3 -m tests.simulate_igmp leave --src-ip 10.0.0.21
+sudo python3 -m tests.simulate_igmp leave --src-ip 10.0.0.22 --igmp 3
+```
+
+#### Test 2: Alerts on 2 machines
+
+Computer A runs the controller and AudioWatch. Computer B joins and leaves. Connect them with an Ethernet cable or an unmanaged switch and give them static IPs (below: A is 192.168.50.1, B is 192.168.50.2). Wi-Fi and switches with IGMP snooping often block this traffic.
+
+1. Computer A, terminal 1: 
+```
+make audiowatch
+```
+2. Computer A, terminal 2: 
+```
+python3 -m controller.main --group 239.69.11.44 --port 5004 --interface 192.168.50.1
+```
+
+3. **JOIN:** (Computer B):
+```
+python3 -m receiver.main --interface 192.168.50.2 -q
+```
+
+4. **MAC_CHANGED:** (Computer B):
+```
+sudo python3 -m tests.simulate_igmp join --iface <B's network card> --src-ip 192.168.50.2 --src-mac 02:de:ad:be:ef:01
+```
+
+5. **LEAVE:** Press Ctrl-C on B's receiver.
+
+6. **EXPIRED:** (Computer B). Run these, then wait about 4 minutes 20 seconds:
+```
+sudo python3 -m tests.simulate_igmp query --iface <B's network card> --src-ip 192.168.50.254
+sudo python3 -m tests.simulate_igmp join  --iface <B's network card> --src-ip 192.168.50.99
+```
+
+#### Test 3: Streaming performance with AudioWatch
+
+Across 2 machines:
+
+1. Computer A: 
+```
+make audiowatch
+```
+
+2. Computer B: 
+```
+python3 -m receiver.main --interface 192.168.50.2 -q
+```
+
+3. Computer A: 
+```
+python3 -m controller.main --group 239.69.11.44 --port 5004 --interface 192.168.50.1 --time 60
+```
+
+4. On A, while AudioWatch is running, also run the latency/loss test.
+```
+make latency-report SECONDS=10
+```
+
 
 ### Future Project Steps
 
